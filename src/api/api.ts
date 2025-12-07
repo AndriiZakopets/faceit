@@ -1,13 +1,26 @@
-import { type GetTeam, GetTeamSchema } from './getTeamSchema';
-import { type RawMatches, RawMatchesSchema } from './getMatchesSchema';
+import { TeamSchema } from './schemas';
+import { GetMatchesPayloadSchema } from './schemas';
 import { requestWrapper } from './requestWrapper';
 
-export const getTeam = async (teamId: string): Promise<GetTeam> => {
-    const url = `https://www.faceit.com/api/teams/v3/teams/${teamId}`;
-    return requestWrapper(url, GetTeamSchema);
+export const getTeamDetails = async (teamId: string) => {
+    return requestWrapper(
+        {
+            url: `/teams/${teamId}`,
+        },
+        TeamSchema
+    );
 };
 
-export const getMatchesPage = async (playerId: string, size = 100, to = Date.now()): Promise<RawMatches> => {
-    const url = `https://www.faceit.com/api/stats/v1/stats/time/users/${playerId}/games/cs2?size=${size}&to=${to}`;
-    return requestWrapper(url, RawMatchesSchema);
+export const getAllMatchesOfAPlayer = async (playerId: string, limit = 100, to = Date.now()) => {
+    return requestWrapper(
+        {
+            url: `/players/${playerId}/history`,
+            params: {
+                game: 'cs2',
+                limit,
+                to,
+            },
+        },
+        GetMatchesPayloadSchema
+    );
 };

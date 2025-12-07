@@ -1,19 +1,20 @@
 import * as api from './api';
-import { type RawMatches } from './getMatchesSchema';
+import type { Match } from './schemas';
 
-export const getLastNMatches = async (playerId: string, n: number): Promise<RawMatches> => {
-    let matches: RawMatches = [];
+export const getLastNMatches = async (playerId: string, n: number): Promise<Match[]> => {
+    let matches: Match[] = [];
     let to = Date.now();
-    const size = 100;
+    const limit = 100;
 
     while (true) {
-        const pageMatches = await api.getMatchesPage(playerId, size, to);
-        matches = matches.concat(pageMatches);
-        if (pageMatches.length < size || matches.length >= n) {
+        const payload = await api.getAllMatchesOfAPlayer(playerId, limit, to);
+        const pageMatches = payload.items;
+        matches = matches.concat(payload.items);
+        if (pageMatches.length < limit || matches.length >= n) {
             break;
         }
         const lastMatch = matches.at(-1)!;
-        to = Math.floor(lastMatch.created_at / 1000 - 1) * 1000;
+        to = Math.floor(lastMatch.started_at / 1000 - 1) * 1000;
     }
 
     return matches.slice(0, n);
