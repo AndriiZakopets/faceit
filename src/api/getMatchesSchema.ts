@@ -1,21 +1,21 @@
 import * as z from 'zod';
 
-export const MatchSchema = z.object({
+export const RawMatchSchema = z.object({
     created_at: z.number(),
     updated_at: z.number(),
-    i10: z.string(),
+    i10: z.enum(['1', '0']), // is win
     i13: z.string(),
     i15: z.string(),
     i14: z.string(),
     i16: z.string(),
     nickname: z.string(),
     playerId: z.string(),
-    i40: z.string(),
+    i40: z.string().optional(),
     i6: z.string(),
     i7: z.string(),
     i8: z.string(),
     i9: z.string(),
-    c10: z.string(),
+    c10: z.string().optional(),
     c2: z.string(),
     c3: z.string(),
     c4: z.string(),
@@ -44,7 +44,7 @@ export const MatchSchema = z.object({
     elo: z.string().optional(),
     elo_delta: z.string().optional(),
 });
-export type Match = z.infer<typeof MatchSchema>;
+export type RawMatch = z.infer<typeof RawMatchSchema>;
 
-export const MatchesSchema = z.array(MatchSchema);
-export type Matches = z.infer<typeof MatchesSchema>;
+export const RawMatchesSchema = z.array(RawMatchSchema);
+export type RawMatches = z.infer<typeof RawMatchesSchema>;
