@@ -78,7 +78,7 @@ const TeamsFaction1Schema = z.object({
     leader: z.string(),
     avatar: z.string(),
     roster: z.array(RosterSchema),
-    stats: StatsSchema,
+    stats: StatsSchema.optional(),
     substituted: z.boolean(),
     name: z.string(),
     type: z.string(),
