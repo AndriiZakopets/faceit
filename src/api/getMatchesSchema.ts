@@ -1,9 +1,11 @@
 import * as z from 'zod';
 
+const StringBooleanSchema = z.enum(['1', '0']);
+
 export const RawMatchSchema = z.object({
     created_at: z.number(),
     updated_at: z.number(),
-    i10: z.enum(['1', '0']), // is win
+    i10: StringBooleanSchema, // is win
     i13: z.string(),
     i15: z.string(),
     i14: z.string(),
@@ -24,9 +26,9 @@ export const RawMatchSchema = z.object({
     teamId: z.string(),
     i3: z.string(),
     i4: z.string(),
-    i5: z.string(),
+    i5: z.string(), // player's team name
     premade: z.boolean(),
-    c5: z.string(),
+    c5: z.string(), // player's won rounds number
     bestOf: z.string(),
     competitionId: z.string(),
     date: z.number(),
@@ -34,12 +36,12 @@ export const RawMatchSchema = z.object({
     gameMode: z.string(),
     i0: z.string(), // region
     i1: z.string(), // map
-    i12: z.string(),
-    i18: z.string(),
+    i12: z.string(), // rounds played
+    i18: z.string(), // score
     i2: z.string(),
     matchId: z.string(),
     matchRound: z.string(),
-    played: z.string(),
+    played: StringBooleanSchema,
     status: z.string(),
     elo: z.string().optional(),
     elo_delta: z.string().optional(),
