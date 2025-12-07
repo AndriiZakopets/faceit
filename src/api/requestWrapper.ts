@@ -1,11 +1,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import z from 'zod';
 
-type Callback = () => Promise<Response>;
-type Input = string | Callback;
-
-const apiKey = '0f4d171d-b693-4cc7-8a2e-aed4988b83a1';
-const authorization = `Bearer ${apiKey}`;
+const authorization = `Bearer ${process.env.FACEIT_API_KEY}`;
 const authorizedAxios = axios.create({
     baseURL: 'https://open.faceit.com/data/v4',
     headers: {
