@@ -9,7 +9,7 @@ const authorizedAxios = axios.create({
     },
 });
 
-export const requestWrapper = async <S extends z.ZodType>(input: AxiosRequestConfig, schema?: S): Promise<z.infer<S>> => {
+export const requestWrapper = async <S extends z.ZodType>(input: AxiosRequestConfig, schema: S | null): Promise<z.infer<S>> => {
     const response = await authorizedAxios(input);
     if (!response.status.toString().startsWith('2')) {
         console.error(`Response error: ${response.data}`);
@@ -22,6 +22,6 @@ export const requestWrapper = async <S extends z.ZodType>(input: AxiosRequestCon
     if (result.success) {
         return result.data;
     }
-    console.log(JSON.stringify(z.treeifyError(result.error), null, 2));
+    console.error(JSON.stringify(z.treeifyError(result.error), null, 2));
     throw new Error('Response validation failed');
 };
