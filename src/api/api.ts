@@ -1,5 +1,4 @@
-import { TeamSchema } from './schemas';
-import { GetMatchesPayloadSchema } from './schemas';
+import { GetMatchesPayloadSchema, MatchDetailsSchema, TeamSchema } from './schemas';
 import { requestWrapper } from './requestWrapper';
 
 export const getTeamDetails = async (teamId: string) => {
@@ -22,5 +21,14 @@ export const getAllMatchesOfAPlayer = async (playerId: string, limit = 100, to =
             },
         },
         GetMatchesPayloadSchema
+    );
+};
+
+export const getMatchDetails = async (matchId: string) => {
+    return requestWrapper(
+        {
+            url: `/matches/${matchId}`,
+        },
+        MatchDetailsSchema
     );
 };

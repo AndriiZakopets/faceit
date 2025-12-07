@@ -1,15 +1,15 @@
 import * as z from 'zod';
 
-export const StatusSchema = z.enum(['finished']);
-export type Status = z.infer<typeof StatusSchema>;
+const StatusSchema = z.enum(['finished']);
+type Status = z.infer<typeof StatusSchema>;
 
-export const ScoreSchema = z.object({
+const ScoreSchema = z.object({
     faction1: z.number(),
     faction2: z.number(),
 });
-export type Score = z.infer<typeof ScoreSchema>;
+type Score = z.infer<typeof ScoreSchema>;
 
-export const PlayerSchema = z.object({
+const PlayerSchema = z.object({
     player_id: z.string(),
     nickname: z.string(),
     avatar: z.string(),
@@ -18,30 +18,30 @@ export const PlayerSchema = z.object({
     game_player_name: z.string(),
     faceit_url: z.string(),
 });
-export type Player = z.infer<typeof PlayerSchema>;
+type Player = z.infer<typeof PlayerSchema>;
 
-export const ResultsSchema = z.object({
+const ResultsSchema = z.object({
     winner: z.string(),
     score: ScoreSchema,
 });
-export type Results = z.infer<typeof ResultsSchema>;
+type Results = z.infer<typeof ResultsSchema>;
 
-export const FactionSchema = z.object({
+const FactionSchema = z.object({
     team_id: z.string(),
     nickname: z.string(),
     avatar: z.string(),
     type: z.string(),
     players: z.array(PlayerSchema),
 });
-export type Faction = z.infer<typeof FactionSchema>;
+type Faction = z.infer<typeof FactionSchema>;
 
-export const TeamsSchema = z.object({
+const TeamsSchema = z.object({
     faction2: FactionSchema,
     faction1: FactionSchema,
 });
-export type Teams = z.infer<typeof TeamsSchema>;
+type Teams = z.infer<typeof TeamsSchema>;
 
-export const MatchSchema = z.object({
+const MatchSchema = z.object({
     match_id: z.string(),
     game_id: z.string(),
     region: z.string(),
@@ -70,4 +70,4 @@ export const GetMatchesPayloadSchema = z.object({
     from: z.number(),
     to: z.number(),
 });
-export type GetMatchesPayload = z.infer<typeof GetMatchesPayloadSchema>;
+type GetMatchesPayload = z.infer<typeof GetMatchesPayloadSchema>;
