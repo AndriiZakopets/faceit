@@ -112,4 +112,4 @@ export const MatchDetailsSchema = z.object({
     status: z.string(),
     faceit_url: z.string(),
 });
-type MatchDetails = z.infer<typeof MatchDetailsSchema>;
+export type MatchDetails = z.infer<typeof MatchDetailsSchema>;
