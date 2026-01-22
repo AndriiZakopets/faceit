@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@types/p-throttle':
+        specifier: ^2.1.0
+        version: 2.1.0
       axios:
         specifier: ^1.13.2
         version: 1.13.2
@@ -38,6 +41,10 @@ packages:
 
   '@types/node@24.10.1':
     resolution: {integrity: sha512-GNWcUTRBgIRJD5zj+Tq0fKOJ5XZajIiBroOF0yvj2bSU1WvNdYS/dn9UxwsujGW4JX06dnHyjV2y9rRaybH0iQ==}
+
+  '@types/p-throttle@2.1.0':
+    resolution: {integrity: sha512-VGMWitHiA6UwHDwfai1govbGdeSmKL2PzWgbEgS07DdCj2eR7u2WIYzFlCeEIXw9cPL3NXwhJwqb9Z+v2YKu4g==}
+    deprecated: This is a stub types definition. p-throttle provides its own type definitions, so you do not need this installed.
 
   asynckit@0.4.0:
     resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
@@ -203,6 +210,10 @@ snapshots:
   '@types/node@24.10.1':
     dependencies:
       undici-types: 7.16.0
+
+  '@types/p-throttle@2.1.0':
+    dependencies:
+      p-throttle: 8.1.0
 
   asynckit@0.4.0: {}
 

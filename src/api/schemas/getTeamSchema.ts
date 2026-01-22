@@ -3,7 +3,7 @@ import * as z from 'zod';
 const MemberSchema = z.object({
     user_id: z.string(),
     nickname: z.string(),
-    avatar: z.string(),
+    avatar: z.string().optional(),
     country: z.string(),
     memberships: z.array(z.string()).optional(),
     faceit_url: z.string(),
@@ -14,7 +14,7 @@ export const TeamSchema = z.object({
     team_id: z.string(),
     nickname: z.string(),
     name: z.string(),
-    avatar: z.string(),
+    avatar: z.string().optional(),
     game: z.string(),
     team_type: z.string(),
     members: z.array(MemberSchema),
