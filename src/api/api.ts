@@ -37,7 +37,7 @@ export const getMatchDetails = async (matchId: string) => {
 export const getMatchStatisctics = async (matchId: string) => {
     return requestWrapper(
         {
-            url: `/matches/${matchId}/stats`,
+            url: `https://www.faceit.com/api/statistics/v1/cs2/matches/${matchId}/match-rounds/1/scoreboard?statsType=2`,
         },
         MatchStatisticsSchema
     );
