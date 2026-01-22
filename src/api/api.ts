@@ -34,11 +34,12 @@ export const getMatchDetails = async (matchId: string) => {
     );
 };
 
-export const getMatchStatisctics = async (matchId: string) => {
+export const getMatchStatistics = async (matchId: string) => {
     return requestWrapper(
         {
             url: `https://www.faceit.com/api/statistics/v1/cs2/matches/${matchId}/match-rounds/1/scoreboard?statsType=2`,
         },
-        MatchStatisticsSchema
+        MatchStatisticsSchema,
+        false
     );
 };

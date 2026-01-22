@@ -52,27 +52,59 @@ const getMatchesWithAtLeastNPlayers = async (roaster: string[], minPlayers: numb
 
 type MatchOutcome = {
     map: string;
-    isWin: boolean;
+    rws: number;
 };
 
 const getMatchesOutcomes = async (roaster: string[], matches: Match[]): Promise<MatchOutcome[]> => {
     const outcomes: MatchOutcome[] = [];
     const { default: pThrottle } = await import('p-throttle');
-    const throttle = pThrottle({ limit: 10, interval: 200 })(<T>(fn: () => Promise<T>) => fn());
+    const throttle1 = pThrottle({ limit: 10, interval: 1000 })(<T>(fn: () => Promise<T>) => fn());
+    const throttle2 = pThrottle({ limit: 1, interval: 2000 })(<T>(fn: () => Promise<T>) => fn());
     let processed = 0;
     await Promise.all(
         matches.map(async (match) => {
-            const matchDetails = await throttle(() => api.getMatchDetails(match.match_id).catch(() => null));
+            const [matchDetails, matchStats] = await Promise.all([
+                throttle1(() => api.getMatchDetails(match.match_id).catch(() => null)),
+                throttle2(() =>
+                    api.getMatchStatistics(match.match_id).catch((e) => {
+                        // console.log(`\nFailed to fetch stats for match ${match.match_id}: ${e.message}`);
+                        return null;
+                    })
+                ),
+            ]);
             process.stdout.write(`\rProcessed match ${++processed}/${matches.length}...`);
-            if (!matchDetails || matchDetails.voting.map.pick.length !== 1) {
+
+            if (!matchDetails || !matchStats || matchDetails.voting.map.pick.length !== 1) {
                 return;
             }
+
+            const playersStats = matchStats.payload.cs2.teams.flatMap((team) => team.players || []);
+            const stats = {
+                count: 0,
+                rws: 0,
+            };
+            const playersRws = playersStats.forEach((player) => {
+                if (!roaster.includes(player.player_id)) {
+                    return;
+                }
+
+                stats.count += 1;
+                const playerRws = player.total.rws || 0;
+                stats.rws += playerRws / 100;
+            });
+
+            const remainingRws = 1 - stats.rws;
+            const remainingPlayers = 10 - stats.count;
+            const avgRwsPerRemainingPlayer = remainingRws / remainingPlayers;
+            const missingPlayers = 5 - stats.count;
+            const rws = stats.rws + missingPlayers * avgRwsPerRemainingPlayer;
+
             const map = matchDetails.voting.map.pick[0]!;
-            const isFaction1 = matchDetails.teams.faction1.roster.some((player) => roaster.includes(player.player_id));
-            const isWin = isFaction1 ? matchDetails.results.winner === 'faction1' : matchDetails.results.winner === 'faction2';
+            // const isFaction1 = matchDetails.teams.faction1.roster.some((player) => roaster.includes(player.player_id));
+            // const isWin = isFaction1 ? matchDetails.results.winner === 'faction1' : matchDetails.results.winner === 'faction2';
             const outcome: MatchOutcome = {
                 map,
-                isWin,
+                rws,
             };
             outcomes.push(outcome);
         })
@@ -84,30 +116,27 @@ const getMatchesOutcomes = async (roaster: string[], matches: Match[]): Promise<
 type OutcomesRecord = Record<
     string,
     {
-        w: number;
-        l: number;
+        i: number;
+        t: number;
     }
 >;
 
 const getOutcomesRecord = (outcomes: MatchOutcome[]): OutcomesRecord => {
     const record: OutcomesRecord = {
-        de_nuke: { w: 0, l: 0 },
-        de_ancient: { w: 0, l: 0 },
-        de_inferno: { w: 0, l: 0 },
-        de_overpass: { w: 0, l: 0 },
-        de_dust2: { w: 0, l: 0 },
-        de_anubis: { w: 0, l: 0 },
-        de_mirage: { w: 0, l: 0 },
+        de_nuke: { i: 0, t: 0 },
+        de_ancient: { i: 0, t: 0 },
+        de_inferno: { i: 0, t: 0 },
+        de_overpass: { i: 0, t: 0 },
+        de_dust2: { i: 0, t: 0 },
+        de_anubis: { i: 0, t: 0 },
+        de_mirage: { i: 0, t: 0 },
     };
     outcomes.forEach((outcome) => {
         if (!record[outcome.map]) {
             return;
         }
-        if (outcome.isWin) {
-            record[outcome.map]!.w += 1;
-        } else {
-            record[outcome.map]!.l += 1;
-        }
+        record[outcome.map]!.t += 1;
+        record[outcome.map]!.i += outcome.rws;
     });
     return record;
 };
@@ -120,12 +149,11 @@ async function main(roster: string[]) {
     console.log(
         Object.fromEntries(
             Object.entries(record).map(([map, rec]) => {
-                const t = rec.w + rec.l;
-                const s = `${((100 * rec.w) / t || 0).toFixed(2)}% (${rec.w}/${t})`;
+                const s = `${((100 * rec.i) / rec.t || 0).toFixed(2)}% / ${rec.t}`;
                 return [map, s];
             })
         )
     );
 }
 
-main(OPPONENT_ROSTER);
+main(KANTALUPA_ROSTER);
