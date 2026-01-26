@@ -4,13 +4,11 @@ import { Match } from './api/schemas';
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const OPPONENT_ROSTER = [
-    // '29785d40-223a-41fe-8c04-f0d7413004d3', // "SRYKKK"
-    '13463809-6431-418d-9d4e-87716f9b3c30', // "Bla1se_"
-    // 'fbab250f-0bbf-4514-a20a-ba15c89a24b5', // "IsweeZHD"
-    '2d2c0d15-16ee-4673-b95d-88fb86592d62', // "Skur0"
-    'd92b9e2e-f2c4-458b-bd01-b85217f7ea3e', // "ManS-"
-    '8f180385-bd39-4ea6-89f3-c524b423ea96', // "DaftSystem"
-    '2f3255f9-7140-4558-b452-1ae3ae7e18b8', // "Tartiflexxx_"
+    '4e788df8-ef59-4afa-a7fa-dc546e33f842', // "5hend1"
+    '54f563a6-16c1-4f87-b29e-bb737446fd72', // "HeavyDomin"
+    '59a8b3cb-24cf-4959-8e90-93d5819e467a', // "_Sw1M_"
+    '90b060b6-cbe5-4a71-aeff-faa54efc7818', // "xN1c0x"
+    '59bb3429-da27-4cde-b40b-8dd6860702ef', // "xSali"
 ];
 const KANTALUPA_ROSTER = [
     '94b493a4-3132-436e-9c8a-1437194c152e',
@@ -52,7 +50,7 @@ const getMatchesWithAtLeastNPlayers = async (roaster: string[], minPlayers: numb
 
 type MatchOutcome = {
     map: string;
-    rws: number;
+    isWin: boolean;
 };
 
 const getMatchesOutcomes = async (roaster: string[], matches: Match[]): Promise<MatchOutcome[]> => {
@@ -63,48 +61,18 @@ const getMatchesOutcomes = async (roaster: string[], matches: Match[]): Promise<
     let processed = 0;
     await Promise.all(
         matches.map(async (match) => {
-            const [matchDetails, matchStats] = await Promise.all([
-                throttle1(() => api.getMatchDetails(match.match_id).catch(() => null)),
-                throttle2(() =>
-                    api.getMatchStatistics(match.match_id).catch((e) => {
-                        // console.log(`\nFailed to fetch stats for match ${match.match_id}: ${e.message}`);
-                        return null;
-                    })
-                ),
-            ]);
+            const [matchDetails] = await Promise.all([throttle1(() => api.getMatchDetails(match.match_id).catch(() => null))]);
             process.stdout.write(`\rProcessed match ${++processed}/${matches.length}...`);
-
-            if (!matchDetails || !matchStats || matchDetails.voting.map.pick.length !== 1) {
+            if (!matchDetails) {
                 return;
             }
 
-            const playersStats = matchStats.payload.cs2.teams.flatMap((team) => team.players || []);
-            const stats = {
-                count: 0,
-                rws: 0,
-            };
-            const playersRws = playersStats.forEach((player) => {
-                if (!roaster.includes(player.player_id)) {
-                    return;
-                }
-
-                stats.count += 1;
-                const playerRws = player.total.rws || 0;
-                stats.rws += playerRws / 100;
-            });
-
-            const remainingRws = 1 - stats.rws;
-            const remainingPlayers = 10 - stats.count;
-            const avgRwsPerRemainingPlayer = remainingRws / remainingPlayers;
-            const missingPlayers = 5 - stats.count;
-            const rws = stats.rws + missingPlayers * avgRwsPerRemainingPlayer;
-
             const map = matchDetails.voting.map.pick[0]!;
-            // const isFaction1 = matchDetails.teams.faction1.roster.some((player) => roaster.includes(player.player_id));
-            // const isWin = isFaction1 ? matchDetails.results.winner === 'faction1' : matchDetails.results.winner === 'faction2';
+            const isFaction1 = matchDetails.teams.faction1.roster.some((player) => roaster.includes(player.player_id));
+            const isWin = isFaction1 ? matchDetails.results.winner === 'faction1' : matchDetails.results.winner === 'faction2';
             const outcome: MatchOutcome = {
                 map,
-                rws,
+                isWin,
             };
             outcomes.push(outcome);
         })
@@ -116,40 +84,42 @@ const getMatchesOutcomes = async (roaster: string[], matches: Match[]): Promise<
 type OutcomesRecord = Record<
     string,
     {
-        i: number;
+        w: number;
         t: number;
     }
 >;
 
 const getOutcomesRecord = (outcomes: MatchOutcome[]): OutcomesRecord => {
     const record: OutcomesRecord = {
-        de_nuke: { i: 0, t: 0 },
-        de_ancient: { i: 0, t: 0 },
-        de_inferno: { i: 0, t: 0 },
-        de_overpass: { i: 0, t: 0 },
-        de_dust2: { i: 0, t: 0 },
-        de_anubis: { i: 0, t: 0 },
-        de_mirage: { i: 0, t: 0 },
+        de_nuke: { w: 0, t: 0 },
+        de_ancient: { w: 0, t: 0 },
+        de_inferno: { w: 0, t: 0 },
+        de_overpass: { w: 0, t: 0 },
+        de_dust2: { w: 0, t: 0 },
+        de_anubis: { w: 0, t: 0 },
+        de_mirage: { w: 0, t: 0 },
     };
     outcomes.forEach((outcome) => {
         if (!record[outcome.map]) {
             return;
         }
         record[outcome.map]!.t += 1;
-        record[outcome.map]!.i += outcome.rws;
+        if (outcome.isWin) {
+            record[outcome.map]!.w += 1;
+        }
     });
     return record;
 };
 
 async function main(roster: string[]) {
     const minPlayers = process.argv[2] ? parseInt(process.argv[2]!, 10) : 5;
-    const matches = await getMatchesWithAtLeastNPlayers(roster, minPlayers, Date.now() - 300 * ONE_DAY);
+    const matches = await getMatchesWithAtLeastNPlayers(roster, minPlayers, Date.now() - 90 * ONE_DAY);
     const outcomes = await getMatchesOutcomes(roster, matches);
     const record = getOutcomesRecord(outcomes);
     console.log(
         Object.fromEntries(
             Object.entries(record).map(([map, rec]) => {
-                const s = `${((100 * rec.i) / rec.t || 0).toFixed(2)}% / ${rec.t}`;
+                const s = `${((100 * rec.w) / rec.t || 0).toFixed(2)}% (${rec.w}/${rec.t})`;
                 return [map, s];
             })
         )
